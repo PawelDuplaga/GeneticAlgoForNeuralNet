@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -18,12 +19,11 @@ namespace GeneticAlgoForNeuralNet
         public double mutatationProbabilty = 0.01;
         public double mutationGeneRatio = 0.05;
 
-
-        public void SelectNewGeneration(List<NeuralNetwork> pastGeneration)
+        public List<NeuralNetwork> SelectNewGeneration(List<NeuralNetwork> pastGeneration)
         {
             List<NeuralNetwork> newGeneration = new List<NeuralNetwork>();
 
-            while(newGeneration.Count < populationSize*newCandidatesInPopulationRatio)
+            while(newGeneration.Count < this.populationSize * this.newCandidatesInPopulationRatio)
             {
                 List<NeuralNetwork> candidates = Selectors.RouletteSelection(pastGeneration,2);
 
@@ -32,11 +32,11 @@ namespace GeneticAlgoForNeuralNet
 
                 NeuralNetwork new_candidate = candidates[0];
 
-                if (temp_crossoverProbabilty <= crossoverProbabilty)
+                if (temp_crossoverProbabilty <= this.crossoverProbabilty)
                 {
                     new_candidate = Crossover(candidates[0], candidates[1]);
                 }
-                if (temp_mutatationProbabilty <= crossoverProbabilty)
+                if (temp_mutatationProbabilty <= this.crossoverProbabilty)
                 {
                     new_candidate = Mutate(new_candidate);
                 }
@@ -45,14 +45,62 @@ namespace GeneticAlgoForNeuralNet
 
             }
 
+            while(newGeneration.Count < populationSize)
+            {
+                newGeneration.Add(pastGeneration[0].RadomizeWeights_XavierInitialization());
+            }
 
+            return newGeneration;
         }
 
 
+
+        //I need it more generic - need Change later
         public NeuralNetwork Mutate(NeuralNetwork net)
         {
+            Random rand = new Random();
+
+            for (int j = 0; j< net.WEIGHTS.Count;j++) 
+            {
+                for(int i = 0; i < net.WEIGHTS[j].rows;i++)
+                {
+                    for(int k=0; k < net.WEIGHTS[j].columns; k++)
+                    {
+                        double random_mutationGeneRatio = rand.NextDouble();
+                        if(random_mutationGeneRatio < this.mutationGeneRatio)
+                        {
+                            double current_value = net.WEIGHTS[j][i, k];
+                            int number_of_inputs = net.LAYERS[j].columns;
+                            net.WEIGHTS[j][i, k] = MutateValueForXavierReLU(current_value, number_of_inputs);
+                        }
+                    }
+                }
+            }
             return net;
         }
+
+
+        //public static double MutateValue(double value, double)
+        //{
+        //    Random rand = new Random();
+        //    double noise = rand.NextDouble() * sigma;
+        //    double sign = rand.NextDouble() < 0.5 ? -1.0 : 1.0;
+        //    double mutatedValue = value + sign * noise;
+        //    return mutatedValue;
+        //}
+
+        public static Func<double, int, double> MutateValueForXavierReLU => (value, n_in) =>
+        {
+            Random rand = new Random();
+            double noise = rand.NextDouble() * Math.Sqrt(2 / n_in);
+            double sign = rand.NextDouble() < 0.5 ? -1.0 : 1.0;
+            double mutatedValue = value + sign * noise;
+            return mutatedValue;
+        };
+
+
+
+
 
         public NeuralNetwork Crossover(NeuralNetwork n1, NeuralNetwork n2)
         {
@@ -68,6 +116,7 @@ namespace GeneticAlgoForNeuralNet
             {
 
                 double totafitness = generation.Sum(x => x.fintess);
+                //generation.Sort((x,y) => y.fintess.CompareTo(x.fintess));
                 List<NeuralNetwork> results = new List<NeuralNetwork>();
 
 
