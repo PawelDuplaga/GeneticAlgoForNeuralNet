@@ -25,16 +25,24 @@ namespace GeneticAlgoForNeuralNet
 
             while(newGeneration.Count < populationSize*newCandidatesInPopulationRatio)
             {
-                NeuralNetwork n1 = RouletteSelection(pastGeneration);
-                NeuralNetwork n2 = RouletteSelection(pastGeneration);
+                List<NeuralNetwork> candidates = Selectors.RouletteSelection(pastGeneration,2);
 
                 double temp_mutatationProbabilty = new Random().NextDouble();
                 double temp_crossoverProbabilty = new Random().NextDouble();
 
+                NeuralNetwork new_candidate = candidates[0];
+
+                if (temp_crossoverProbabilty <= crossoverProbabilty)
+                {
+                    new_candidate = Crossover(candidates[0], candidates[1]);
+                }
                 if (temp_mutatationProbabilty <= crossoverProbabilty)
                 {
-                    n1 = Mutate(n1);
+                    new_candidate = Mutate(new_candidate);
                 }
+
+                newGeneration.Add(new_candidate);
+
             }
 
 
@@ -46,34 +54,71 @@ namespace GeneticAlgoForNeuralNet
             return net;
         }
 
-        public (NeuralNetwork n1, NeuralNetwork n2) Crossover(NeuralNetwork n1, NeuralNetwork n2)
+        public NeuralNetwork Crossover(NeuralNetwork n1, NeuralNetwork n2)
         {
-            return (n1, n2);
+            return n1;
         }
 
 
 
-        public NeuralNetwork? RouletteSelection(List<NeuralNetwork> generation, Func<double,double> transformFunction)
+        private class Selectors
         {
 
-            double totafitness = generation.Sum(x => transformFunction(x.fintess));
-            double roulettePosition = new Random().NextDouble();
-            double cumulativeFitness = 0;
-
-            foreach(var net in generation)
+            public static List<NeuralNetwork> RouletteSelection(List<NeuralNetwork> generation, int numberOfDifferentCandidates)
             {
-                cumulativeFitness += transformFunction(net.fintess / totafitness);
-                if(cumulativeFitness >= roulettePosition) 
+
+                double totafitness = generation.Sum(x => x.fintess);
+                List<NeuralNetwork> results = new List<NeuralNetwork>();
+
+
+                while (results.Count() < numberOfDifferentCandidates)
                 {
-                    return net;
+                    double cumulativeFitness = 0;
+                    double roulettePosition = new Random().NextDouble();
+
+                    for (int i = 0; i < generation.Count; i++)
+                    {
+                        cumulativeFitness += generation[i].fintess / totafitness;
+                        if (cumulativeFitness >= roulettePosition)
+                        {
+                            if (results.Contains(generation[i])) break;
+                            else results.Add(generation[i]);
+                        }
+                    }
+
                 }
+
+                return results;
             }
 
-            return null;
+            public static List<NeuralNetwork> RouletteSelection(List<NeuralNetwork> generation, int numberOfDifferentCandidates, Func<double, double> RouletteAddingRatioFunc)
+            {
+
+                double totafitness = generation.Sum(x => RouletteAddingRatioFunc(x.fintess));
+                List<NeuralNetwork> results = new List<NeuralNetwork>();
+                
+
+                while (results.Count() < numberOfDifferentCandidates) 
+                {
+                    double cumulativeFitness = 0;
+                    double roulettePosition = new Random().NextDouble();
+
+                    for (int i = 0; i < generation.Count; i++)
+                    {
+                        cumulativeFitness += RouletteAddingRatioFunc(generation[i].fintess) / totafitness;
+                        if (cumulativeFitness >= roulettePosition)
+                        {
+                            if (results.Contains(generation[i])) break;
+                            else results.Add(generation[i]);
+                        }
+                    }
+
+                }
+
+                return results;
+            }
+
         }
-
-        
-
 
     }
 }
