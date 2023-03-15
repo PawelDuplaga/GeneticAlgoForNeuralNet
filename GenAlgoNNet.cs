@@ -19,6 +19,19 @@ namespace GeneticAlgoForNeuralNet
         public double mutatationProbabilty = 0.01;
         public double mutationGeneRatio = 0.05;
 
+
+        //temp_data
+        private List<double> generations_avg_fitness;
+        private List<double> generations_smallest_fitness;
+        private List<double> generations_largest_fitness;
+
+
+        public List<NeuralNetwork> RunAlgo (List<NeuralNetwork> startGeneration)
+        {
+
+        }
+
+
         public List<NeuralNetwork> SelectNewGeneration(List<NeuralNetwork> pastGeneration)
         {
             List<NeuralNetwork> newGeneration = new List<NeuralNetwork>();
