@@ -26,9 +26,9 @@ namespace GeneticAlgoForNeuralNet
         private List<double> generations_largest_fitness;
 
 
-        public List<NeuralNetwork> RunAlgo (List<NeuralNetwork> startGeneration)
+        public List<NeuralNetwork> RunAlgo (List<NeuralNetwork> startGeneration, )
         {
-
+            
         }
 
 
@@ -66,6 +66,10 @@ namespace GeneticAlgoForNeuralNet
             return newGeneration;
         }
 
+        public setGenerationFitnesses(double[] fitnesses, List<NeuralNetwork> currGeneration)
+        {
+            for
+        }
 
 
         //I need it more generic - need Change later
@@ -91,6 +95,7 @@ namespace GeneticAlgoForNeuralNet
             }
             return net;
         }
+
 
 
         //public static double MutateValue(double value, double)
